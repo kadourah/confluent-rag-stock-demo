@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "@confluentinc/kafka-javascript": "^1.2.0",
+    "@confluentinc/schemaregistry": "^1.1.0",
+    "@polygon.io/client-js": "^7.3.2",
+    "axios": "^1.7.9",
+    "dotenv": "^16.4.7"
+  },
+  "type": "module"
+}

@@ -10,7 +10,7 @@ import {
 
   import dotenv from 'dotenv';
 
-  dotenv.config({ debug: true });
+  dotenv.config();
 
   const polygonAPIKey = process.env.POLYGON_API_KEY;  
   
@@ -23,7 +23,7 @@ import {
  const confluentkAKFkABroker= process.env.CONFLUENT_KAFKA_BROKER
 
  
-  const topic = "stock-agg-per-minute";
+  const topic = "ticker-agg-per-minute";
 
  
   const basicAuthCredentials  = {
@@ -71,7 +71,7 @@ import {
         "type": "float"
       },
       {
-        "name": "op",
+         "name": "op",
         "type": "float"
       },
       {
@@ -160,7 +160,7 @@ async function producerStart() {
 
                     if (parsedMessage[0].ev === 'status' && parsedMessage[0].status === 'auth_success') {
                         console.log('Subscribing to the minute aggregates channel');
-                        ws.send(JSON.stringify({ "action": "subscribe", "params": "AM.AVGO, AM.MSFT" }));
+                        ws.send(JSON.stringify({ "action": "subscribe", "params": "AM.*" }));
                     }
 
                     if (parsedMessage[0].ev !== 'status') {
@@ -168,14 +168,14 @@ async function producerStart() {
 
                             if (message !== undefined) {
 
-                            var msg = await serializer.serialize("stock-min", message);
+                            var msg = await serializer.serialize(topic, message);
                             await producer.send({
                                 topic: topic,
                                 messages: [
                                     {
                                         value: msg,
                                         key: message.sym,
-                                    },
+                                    }
                                 ],
                             });
                         }
@@ -186,7 +186,6 @@ async function producerStart() {
                     reject(err); // Reject the promise if an error occurs
                 }
             };
-
             ws.onclose = (code, reason) => {
                 console.log('WebSocket closed:', code, reason);
                 resolve(); // Resolve the promise when the WebSocket closes

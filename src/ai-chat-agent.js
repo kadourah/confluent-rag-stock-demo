@@ -43,14 +43,19 @@ async function findSimilarDocuments(embedding) {
         const db = client.db('stock'); // Replace with your database name.
         const collection = db.collection('stock-min-data'); // Replace with your collection name.
         
+        const sample = await collection.findOne({}, { projection: { vector: 1 } });
+            console.log("Stored vector length:", sample.vector.length); 
+            console.log("Query vector length:", embedding.length);
+
+
         // Query for similar documents.
         const documents = await collection.aggregate([
   {"$vectorSearch": {
     "queryVector": embedding,
     "path": "vector",
-    "numCandidates": 100,
+    "numCandidates": 50,
     "limit": 5,
-    "index": "vector_index",
+    "index": "vector",
       }}
 ]).toArray();
         
@@ -59,18 +64,29 @@ async function findSimilarDocuments(embedding) {
         await client.close();
     }
 }
+import readline from 'readline';
 
 async function main() {
-    const query = 'sotcks with high volume for today'; // Replace with your query.
-    
-    try {
-        const embedding = await getEmbedding(query);
-        const documents = await findSimilarDocuments(embedding);
-        
-        console.log(documents);
-    } catch(err) {
-        console.error(err);
-    }
+    const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+    });
+
+     rl.question('Please enter your query: ', async (query) => {
+        try {
+            console.log('query');
+            const embedding = await getEmbedding(query);
+            const documents = await findSimilarDocuments(embedding);
+            
+            console.log(documents);
+        } catch(err) {
+            console.error(err);
+        } finally {
+            rl.close();
+        }
+    });
 }
+
+
 
 main();

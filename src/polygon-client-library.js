@@ -160,7 +160,7 @@ async function producerStart() {
 
                     if (parsedMessage[0].ev === 'status' && parsedMessage[0].status === 'auth_success') {
                         console.log('Subscribing to the minute aggregates channel');
-                        ws.send(JSON.stringify({ "action": "subscribe", "params": "AM.*" }));
+                        ws.send(JSON.stringify({ "action": "subscribe", "params": "AM.MSFT, AM.CFLT, AM.AAPL" }));
                     }
 
                     if (parsedMessage[0].ev !== 'status') {

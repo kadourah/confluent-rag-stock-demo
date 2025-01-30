@@ -1,5 +1,5 @@
 ## commands to to run
-1. Connect to flink `confluent flink shell --compute-pool lfcp-53z7rz --environment env-v603np` 
+1. Connect to flink `confluent flink shell --compute-pool lfcp-2dr322 --environment env-v603np` 
 2. select * from  `stock-agg-per-minute`, lateral table (ml_predict('vector_encoding', 'sym'));
 3. confluent flink connection create openai-vector-connection --cloud aws --region us-east-1 --environment env-v603np --type openai --endpoint https://api.openai.com/v1/embeddings --api-key <key>
    
@@ -9,7 +9,8 @@ OUTPUT (vector ARRAY<FLOAT>)
 WITH(
   'TASK' = 'embedding',
   'PROVIDER' = 'openai',
-  'OPENAI.CONNECTION' = 'openai-vector-connection'
+  'OPENAI.CONNECTION' = 'openai-vector-connection',
+  'OPENAI.model' ='text-embedding-ada-002'
 );
 1. `select * from  `stock-agg-per-minute`, lateral table (ml_predict('vector_encoding', 'sym'));`
 2. CREATE TABLE `stock-min-content` (

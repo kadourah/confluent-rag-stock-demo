@@ -2,20 +2,12 @@ import axios from 'axios';
 
 import dotenv from 'dotenv';
 import { MongoClient } from 'mongodb';
-import OpenAI from 'openai';
-
-
-
 
   dotenv.config();
 
 const openai_key= process.env.OPENAI_API_KEY
 
 const mongodb_URL= process.env.MONGO_DB_URL
-
-const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY, // Ensure this is set in your .env file
-});
 
 async function getEmbedding(query) {
     // Define the OpenAI API url and key.
@@ -60,7 +52,7 @@ async function findSimilarDocuments(embedding) {
     "queryVector": embedding,
     "path": "vector",
     "numCandidates": 50,
-    "limit": 10,
+    "limit": 5,
     "index": "vector",
       }}
 ]).toArray();
@@ -81,9 +73,8 @@ async function main() {
      rl.question('Please enter your query: ', async (query) => {
         try {
             console.log('query');
-            const chatGPTResponse= await handleUserQuery(query);
-           // const embedding = await getEmbedding(query);
-           // const documents = await findSimilarDocuments(embedding);
+            const embedding = await getEmbedding(query);
+            const documents = await findSimilarDocuments(embedding);
             
             console.log(documents);
         } catch(err) {
@@ -94,32 +85,6 @@ async function main() {
     });
 }
 
-// Example usage
-async function handleUserQuery(userQuery) {
-    const embedding = await getEmbedding(userQuery); // Assuming you have a function to get embeddings
-    const similarDocuments = await findSimilarDocuments(embedding);
-    
-    const chatGPTResponse = await getChatGPTResponse(userQuery);
-    console.log("ChatGPT Response:", chatGPTResponse);
-
-    return {
-        similarDocuments,
-        chatGPTResponse
-    };
-}
 
 
-// Function to get ChatGPT response
-async function getChatGPTResponse(prompt) {
-    try {
-        const response = await openai.chat.completions.create({
-            model: "gpt-3.5-turbo",
-            messages: [{ role: "user", content: prompt }],
-        });
-        return response.choices[0].message.content;
-    } catch (error) {
-        console.error("Error getting ChatGPT response:", error);
-        throw new Error("Failed to get ChatGPT response");
-    }
-}
 main();

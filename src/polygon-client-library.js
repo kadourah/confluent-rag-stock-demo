@@ -160,13 +160,18 @@ async function producerStart() {
 
                     if (parsedMessage[0].ev === 'status' && parsedMessage[0].status === 'auth_success') {
                         console.log('Subscribing to the minute aggregates channel');
-                        ws.send(JSON.stringify({ "action": "subscribe", "params": "AM.MSFT, AM.CFLT, AM.AAPL" }));
+                        ws.send(JSON.stringify({ "action": "subscribe", "params": "AM.*" }));
                     }
 
                     if (parsedMessage[0].ev !== 'status') {
                         await Promise.all(parsedMessage.map(async (message) => {
 
                             if (message !== undefined) {
+
+                               // Add default value to "op" if it's null
+                               if (message.op === null || message.op === undefined) {
+                                message.op = 0.00;
+                            }
 
                             var msg = await serializer.serialize(topic, message);
                             await producer.send({

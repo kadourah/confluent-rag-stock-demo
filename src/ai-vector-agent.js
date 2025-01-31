@@ -42,16 +42,13 @@ async function findSimilarDocuments(embedding) {
         const collection = db.collection('stock-min-data'); // Replace with your collection name.
         
         const sample = await collection.findOne({}, { projection: { vector: 1 } });
-            console.log("Stored vector length:", sample.vector.length); 
-            console.log("Query vector length:", embedding.length);
-
-
+           
         // Query for similar documents.
         const documents = await collection.aggregate([
   {"$vectorSearch": {
     "queryVector": embedding,
     "path": "vector",
-    "numCandidates": 50,
+    "numCandidates": 20,
     "limit": 5,
     "index": "vector",
       }}

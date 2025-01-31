@@ -46,11 +46,13 @@ async function findSimilarDocuments(embedding) {
         // Query for similar documents.
         const documents = await collection.aggregate([
   {"$vectorSearch": {
+    
     "queryVector": embedding,
     "path": "vector",
-    "numCandidates": 20,
-    "limit": 5,
+    "numCandidates": 5,
+    "limit": 3,
     "index": "vector",
+    "filter": { "stock_symbol": "MSFT" }
       }}
 ]).toArray();
         

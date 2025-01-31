@@ -4,10 +4,11 @@ import dotenv from 'dotenv';
 import { MongoClient } from 'mongodb';
 import OpenAI from 'openai';
 
+import readline from 'readline';
 
 
 
-  dotenv.config();
+dotenv.config();
 
 const openai_key= process.env.OPENAI_API_KEY
 
@@ -59,8 +60,8 @@ async function findSimilarDocuments(embedding) {
   {"$vectorSearch": {
     "queryVector": embedding,
     "path": "vector",
-    "numCandidates": 50,
-    "limit": 10,
+    "numCandidates": 20,
+    "limit": 5,
     "index": "vector",
       }}
 ]).toArray();
@@ -70,7 +71,6 @@ async function findSimilarDocuments(embedding) {
         await client.close();
     }
 }
-import readline from 'readline';
 
 async function main() {
     const rl = readline.createInterface({
@@ -85,7 +85,7 @@ async function main() {
            // const embedding = await getEmbedding(query);
            // const documents = await findSimilarDocuments(embedding);
             
-            console.log(documents);
+           // console.log(documents);
         } catch(err) {
             console.error(err);
         } finally {
@@ -93,6 +93,8 @@ async function main() {
         }
     });
 }
+
+
 
 // Example usage
 async function handleUserQuery(userQuery) {

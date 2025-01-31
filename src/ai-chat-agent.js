@@ -4,10 +4,6 @@ import dotenv from 'dotenv';
 import { MongoClient } from 'mongodb';
 import OpenAI from 'openai';
 
-import readline from 'readline';
-
-
-
 dotenv.config();
 
 const openai_key= process.env.OPENAI_API_KEY
@@ -51,17 +47,15 @@ async function findSimilarDocuments(embedding) {
         const collection = db.collection('stock-min-data'); // Replace with your collection name.
         
         const sample = await collection.findOne({}, { projection: { vector: 1 } });
-            console.log("Stored vector length:", sample.vector.length); 
-            console.log("Query vector length:", embedding.length);
-
+            
 
         // Query for similar documents.
         const documents = await collection.aggregate([
   {"$vectorSearch": {
     "queryVector": embedding,
     "path": "vector",
-    "numCandidates": 20,
-    "limit": 5,
+    "numCandidates": 200,
+    "limit": 10,
     "index": "vector",
       }}
 ]).toArray();
@@ -80,12 +74,15 @@ async function main() {
 
      rl.question('Please enter your query: ', async (query) => {
         try {
-            console.log('query');
-            const chatGPTResponse= await handleUserQuery(query);
-           // const embedding = await getEmbedding(query);
-           // const documents = await findSimilarDocuments(embedding);
             
-           // console.log(documents);
+            const embedding = await getEmbedding(query);
+            const documents = await findSimilarDocuments(embedding);
+            const response = await getChatGPTResponse(query, documents);
+
+
+            
+            
+            console.log(response);
         } catch(err) {
             console.error(err);
         } finally {
@@ -95,25 +92,34 @@ async function main() {
 }
 
 
-
-// Example usage
-async function handleUserQuery(userQuery) {
-    const embedding = await getEmbedding(userQuery); // Assuming you have a function to get embeddings
-    const similarDocuments = await findSimilarDocuments(embedding);
-    
-    const chatGPTResponse = await getChatGPTResponse(userQuery);
-    console.log("ChatGPT Response:", chatGPTResponse);
-
-    return {
-        similarDocuments,
-        chatGPTResponse
-    };
-}
-
-
 // Function to get ChatGPT response
-async function getChatGPTResponse(prompt) {
+async function getChatGPTResponse(userPrompt, stockData) {
     try {
+// Build a structured prompt with relevant stock information
+const stockDetails = stockData.map(stock => `
+    - **Stock Symbol:** ${stock.stock_symbol}
+    - **Stock Volume:** ${stock.stock_volume} shares
+    - **Accumulated Volume:** ${stock.stock_accumulated_volume} shares
+    - **Opening Price:** $${stock.opening_price}
+    - **Closing Price:** $${stock.closing_price_agg}
+    - **Highest Tick Price:** $${stock.highest_tick_price_agg}
+    - **VWAP:** $${stock.volume_weighted_average_price}
+    - **Day's VWAP:** $${stock.volume_avg_price_day}
+    - **Average Trade Size:** ${stock.avg_trade_size_agg} shares
+    - **Time Window:** ${stock.content.match(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3} to \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}/)?.[0]}
+    `).join("\n");
+
+    const prompt = `
+    You are a financial analyst AI assisting users with stock-related queries.
+  
+    **User Query:** 
+    "${userPrompt}"
+  
+    **Stock Data Retrieved:**
+    ${stockDetails}
+  
+    Based on the above data, provide a concise and insightful response, summarizing stock performance and answering the user’s query clearly.
+    `;
         const response = await openai.chat.completions.create({
             model: "gpt-3.5-turbo",
             messages: [{ role: "user", content: prompt }],

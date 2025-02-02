@@ -1,9 +1,8 @@
 import axios from 'axios';
-
 import dotenv from 'dotenv';
 import { MongoClient } from 'mongodb';
 import OpenAI from 'openai';
-
+import readline from 'readline';
 dotenv.config();
 
 const openai_key= process.env.OPENAI_API_KEY
@@ -36,7 +35,7 @@ async function getEmbedding(query) {
     }
 }
 
-async function findSimilarDocuments(embedding) {
+async function findSimilarDocuments(embedding, stock_symbol) {
     const url = mongodb_URL; // Replace with your MongoDB url.
     const client = new MongoClient(url);
     
@@ -57,6 +56,7 @@ async function findSimilarDocuments(embedding) {
     "numCandidates": 200,
     "limit": 10,
     "index": "vector",
+    "filter": { "stock_symbol": stock_symbol }
       }}
 ]).toArray();
         
@@ -72,22 +72,21 @@ async function main() {
         output: process.stdout
     });
 
-     rl.question('Please enter your query: ', async (query) => {
-        try {
-            
-            const embedding = await getEmbedding(query);
-            const documents = await findSimilarDocuments(embedding);
-            const response = await getChatGPTResponse(query, documents);
+    rl.question('Please enter the stock symbol: ', async (stockSymbol) => {
+        rl.question('Please enter your query: ', async (query) => {
+            try {
+                const embedding = await getEmbedding(query);
+                const documents = await findSimilarDocuments(embedding, stockSymbol);
+                const response = await getChatGPTResponse(query, documents);
 
-
-            
-            
-            console.log(response);
-        } catch(err) {
-            console.error(err);
-        } finally {
-            rl.close();
-        }
+                console.log(`Stock Symbol: ${stockSymbol}`);
+                console.log(response);
+            } catch(err) {
+                console.error(err);
+            } finally {
+                rl.close();
+            }
+        });
     });
 }
 

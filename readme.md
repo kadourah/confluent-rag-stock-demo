@@ -109,6 +109,6 @@ insert into `stock-min-vector` select * from `stock-min-content`, lateral table 
 ```   
 
 6. Populate "stock-min-vector" table:
-   ```
-   insert into `stock-min-vector` select * from `stock-min-content`, lateral table (ml_predict('vector_encoding', 'content'));
-   ```
+```
+insert into `stock-min-vector` select * from `stock-min-content`, lateral table (ml_predict('vector_encoding', 'content'));
+```

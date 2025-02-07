@@ -25,6 +25,7 @@ async function getEmbedding(query) {
     });
     
     if(response.status === 200) {
+        console.log(response.data.data[0].embedding);
         return response.data.data[0].embedding;
     } else {
         throw new Error(`Failed to get embedding. Status code: ${response.status}`);
@@ -39,9 +40,9 @@ async function findSimilarDocuments(embedding) {
         await client.connect();
         
         const db = client.db('stock'); // Replace with your database name.
-        const collection = db.collection('stock-min-data'); // Replace with your collection name.
+        const collection = db.collection('stock-quotes-data'); // Replace with your collection name.
         
-        const sample = await collection.findOne({}, { projection: { vector: 1 } });
+       // const sample = await collection.findOne({}, { projection: { vector: 1 } });
            
         // Query for similar documents.
         const documents = await collection.aggregate([
@@ -51,8 +52,7 @@ async function findSimilarDocuments(embedding) {
     "path": "vector",
     "numCandidates": 5,
     "limit": 3,
-    "index": "vector",
-    "filter": { "stock_symbol": "MSFT" }
+    "index": "vector_index"
       }}
 ]).toArray();
         

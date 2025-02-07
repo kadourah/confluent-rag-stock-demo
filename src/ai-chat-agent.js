@@ -35,7 +35,7 @@ async function getEmbedding(query) {
     }
 }
 
-async function findSimilarDocuments(embedding, stock_symbol) {
+async function findSimilarDocuments(embedding) {
     const url = mongodb_URL; // Replace with your MongoDB url.
     const client = new MongoClient(url);
     
@@ -43,9 +43,9 @@ async function findSimilarDocuments(embedding, stock_symbol) {
         await client.connect();
         
         const db = client.db('stock'); // Replace with your database name.
-        const collection = db.collection('stock-min-data'); // Replace with your collection name.
+        const collection = db.collection('stock-quotes-data'); // Replace with your collection name.
         
-        const sample = await collection.findOne({}, { projection: { vector: 1 } });
+       // const sample = await collection.findOne({}, { projection: { vector: 1 } });
             
 
         // Query for similar documents.
@@ -53,10 +53,9 @@ async function findSimilarDocuments(embedding, stock_symbol) {
   {"$vectorSearch": {
     "queryVector": embedding,
     "path": "vector",
-    "numCandidates": 200,
-    "limit": 10,
-    "index": "vector",
-    "filter": { "stock_symbol": stock_symbol }
+    "numCandidates": 5,
+    "limit": 3,
+    "index": "vector_index"
       }}
 ]).toArray();
         
@@ -72,14 +71,13 @@ async function main() {
         output: process.stdout
     });
 
-    rl.question('Please enter the stock symbol: ', async (stockSymbol) => {
+    
         rl.question('Please enter your query: ', async (query) => {
             try {
                 const embedding = await getEmbedding(query);
-                const documents = await findSimilarDocuments(embedding, stockSymbol);
+                const documents = await findSimilarDocuments(embedding);
                 const response = await getChatGPTResponse(query, documents);
 
-                console.log(`Stock Symbol: ${stockSymbol}`);
                 console.log(response);
             } catch(err) {
                 console.error(err);
@@ -87,25 +85,24 @@ async function main() {
                 rl.close();
             }
         });
-    });
+    
 }
 
 
 // Function to get ChatGPT response
 async function getChatGPTResponse(userPrompt, stockData) {
+    //console.log('stockData', stockData);
+   // console.log('userPrompt', userPrompt);
     try {
 // Build a structured prompt with relevant stock information
 const stockDetails = stockData.map(stock => `
     - **Stock Symbol:** ${stock.stock_symbol}
-    - **Stock Volume:** ${stock.stock_volume} shares
-    - **Accumulated Volume:** ${stock.stock_accumulated_volume} shares
-    - **Opening Price:** $${stock.opening_price}
-    - **Closing Price:** $${stock.closing_price_agg}
-    - **Highest Tick Price:** $${stock.highest_tick_price_agg}
-    - **VWAP:** $${stock.volume_weighted_average_price}
-    - **Day's VWAP:** $${stock.volume_avg_price_day}
-    - **Average Trade Size:** ${stock.avg_trade_size_agg} shares
-    - **Time Window:** ${stock.content.match(/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3} to \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}/)?.[0]}
+    - **Bid Price :** ${stock.bid_price} 
+    - **Bid Size :** ${stock.bid_size} 
+    - **Ask Size :** $${stock.ask_size}
+  - **Transaction datetime  :** $${stock.trans_datetime}
+
+    
     `).join("\n");
 
     const prompt = `
@@ -119,6 +116,7 @@ const stockDetails = stockData.map(stock => `
   
     Based on the above data, provide a concise and insightful response, summarizing stock performance and answering the user’s query clearly.
     `;
+
         const response = await openai.chat.completions.create({
             model: "gpt-3.5-turbo",
             messages: [{ role: "user", content: prompt }],

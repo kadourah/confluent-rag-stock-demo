@@ -115,8 +115,8 @@ async function producerStart() {
                     console.log('Received message:', parsedMessage);
 
                     if (parsedMessage[0].ev === 'status' && parsedMessage[0].status === 'auth_success') {
-                        console.log('Subscribing to the quootes channel');
-                        ws.send(JSON.stringify({ "action": "subscribe", "params": "Q.NVDA" }));
+                        console.log('Subscribing to the quotes channel');
+                        ws.send(JSON.stringify({ "action": "subscribe", "params": "Q.CFLT, Q.LLY" }));
                     }
 
                     if (parsedMessage[0].ev !== 'status') {
@@ -130,7 +130,7 @@ async function producerStart() {
                               }
 
                             var msg = await serializer.serialize(topic, message);
-                            console.log('Sending message:', msg);
+                            //console.log('Sending message:', msg);
                             await producer.send({
                                 topic: topic,
                                 messages: [

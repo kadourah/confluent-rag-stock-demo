@@ -10,21 +10,6 @@
 
 1. Build stock-min-content table
 ```
-CREATE TABLE `stock-min-content` (
-    `stock_symbol` string,                 
-    `stock_volume`   INT,                         
-    `stock_accumulated_volume`        INT,                         
-    `opening_price`  float,                      
-    `volume_weighted_average_price` float,
-    `price_agg` float,
-    `closing_price_agg` float,
-    `highest_tick_price_agg` float,
-    `volume_avg_price_day` float,
-    `avg_trade_size_agg` float,
-    `content`      STRING
-) WITH (
-  'value.format' = 'json-registry'
-);
 
 
 CREATE TABLE `stock-quote-content` (
@@ -46,46 +31,6 @@ CREATE TABLE `stock-quote-content` (
 
 2. Execute this query to populate the "stock-min-content" table
 ```
-insert into `stock-min-content` (
-   stock_symbol ,      
-   opening_price,           
-    stock_volume   ,                         
-    stock_accumulated_volume,                                             
-    volume_weighted_average_price ,
-    price_agg ,
-    closing_price_agg ,
-    highest_tick_price_agg ,
-    volume_avg_price_day ,
-    avg_trade_size_agg ,
-    content )
-
-    select 
-    sym,
-    op,
-    v, 
-		av, 
-		vw, 
-		o,
-		c, 
-    h,
-    a,
-    z,     
-CONCAT_WS('', 
-        'Stock ', CAST(sym AS STRING), 
-        ' had an average volume of ', CAST(v AS STRING), 
-        ' shares, with an accumulated volume of ', CAST(av AS STRING), 
-        '. The volume-weighted average price was $', CAST(vw AS STRING), 
-        '. The opening price for this window was $', CAST(o AS STRING), 
-        ', closing at $', CAST(c AS STRING), 
-        ', with the highest tick price reaching $', CAST(h AS STRING), 
-        '. The day''s VWAP was $', CAST(a AS STRING), 
-        ', and the average trade size was ', CAST(z AS STRING), ' shares. ',
-        'This data represents the aggregate window from ', 
-        CAST(TO_TIMESTAMP_LTZ(s, 3) AS STRING), 
-        ' to ', CAST(TO_TIMESTAMP_LTZ(e, 3) AS STRING), '.'
-    ) AS content
-from `ticker-agg-per-minute`
-;
 
 
 insert into `stock-quote-content'
@@ -127,23 +72,6 @@ WITH(
 
 4. Create vector table
 ```
-CREATE TABLE `stock-min-vector` (
-    `stock_symbol` string,                 
-    `stock_volume`   INT,                         
-    `stock_accumulated_volume`        INT,                         
-    `opening_price`  float,                      
-    `volume_weighted_average_price` float,
-    `price_agg` float,
-    `closing_price_agg` float,
-    `highest_tick_price_agg` float,
-    `volume_avg_price_day` float,
-    `avg_trade_size_agg` float,
-    `content`      STRING,
-    `vector`      ARRAY<FLOAT>
-) WITH (
-  'value.format' = 'json-registry'
-);
-
 
 CREATE TABLE `stock-quote-vector` (
     `stock_symbol` string,                           

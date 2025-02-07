@@ -20,7 +20,7 @@ async function getEmbedding(query) {
     // Call OpenAI API to get the embeddings.
     let response = await axios.post(url, {
         input: query,
-        model: "text-embedding-ada-002"
+        model: "text-embedding-3-small"
     }, {
         headers: {
             'Authorization': `Bearer ${openai_key}`,
@@ -53,8 +53,8 @@ async function findSimilarDocuments(embedding) {
   {"$vectorSearch": {
     "queryVector": embedding,
     "path": "vector",
-    "numCandidates": 5,
-    "limit": 3,
+    "numCandidates": 50,
+    "limit": 10,
     "index": "vector_index"
       }}
 ]).toArray();

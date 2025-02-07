@@ -116,10 +116,11 @@ async function producerStart() {
 
                     if (parsedMessage[0].ev === 'status' && parsedMessage[0].status === 'auth_success') {
                         console.log('Subscribing to the quotes channel');
-                        ws.send(JSON.stringify({ "action": "subscribe", "params": "Q.CFLT, Q.LLY" }));
+                        ws.send(JSON.stringify({ "action": "subscribe", "params": "Q.CFLT" }));
                     }
 
                     if (parsedMessage[0].ev !== 'status') {
+                      console.log('Sending message to confluent:', parsedMessage);
                         await Promise.all(parsedMessage.map(async (message) => {
 
                             if (message !== undefined) {

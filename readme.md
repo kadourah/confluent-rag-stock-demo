@@ -25,7 +25,24 @@ CREATE TABLE `stock-min-content` (
 ) WITH (
   'value.format' = 'json-registry'
 );
+
+
+CREATE TABLE `stock-quote-content` (
+    `stock_symbol` string,                           
+    `bid_price` float,                         
+    `bid_size`  int,                      
+    `ask_price` float,
+    `ask_size` int,
+    `trans_datetime` string,
+    `content`      STRING
+) WITH (
+  'value.format' = 'json-registry'
+);
+
+
 ```
+
+
 
 2. Execute this query to populate the "stock-min-content" table
 ```
@@ -41,6 +58,7 @@ insert into `stock-min-content` (
     volume_avg_price_day ,
     avg_trade_size_agg ,
     content )
+
     select 
     sym,
     op,
@@ -68,6 +86,31 @@ CONCAT_WS('',
     ) AS content
 from `ticker-agg-per-minute`
 ;
+
+
+insert into `stock-quote-content'
+(stock_symbol,
+bid_size,
+bid_price,
+ask_size,
+trans_datetime,
+content
+
+
+)
+
+
+select sym, bs, bp, `as`, `ap`, CAST(TO_TIMESTAMP_LTZ(t, 3) AS STRING), 
+  CONCAT_WS('', 
+  ' Stock Symbol: ', CAST(sym AS STRING), 
+  ' Bid Price : ', CAST(bp AS STRING), 
+   ' Ask Price : ', CAST(`ap` AS STRING), 
+  ' Transaction Time : ',CAST(TO_TIMESTAMP_LTZ(t, 3) AS STRING)
+  )
+
+from  `stock_quotes`
+
+
 ```
 3. Create Model
 ``` 
@@ -100,6 +143,23 @@ CREATE TABLE `stock-min-vector` (
 ) WITH (
   'value.format' = 'json-registry'
 );
+
+
+CREATE TABLE `stock-quote-vector` (
+    `stock_symbol` string,                           
+    `bid_price` float,                         
+    `bid_size`  int,                      
+    `ask_price` float,
+    `ask_size` int,
+    `trans_datetime` string,
+    `content`      STRING,
+    `vector`      array<float>
+  
+) WITH (
+  'value.format' = 'json-registry'
+);
+
+
 ```
 
 
